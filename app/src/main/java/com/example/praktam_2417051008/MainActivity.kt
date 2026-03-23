@@ -20,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.style.TextAlign
@@ -42,13 +43,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(modifier: Modifier = Modifier) {
     val allQuestions = QuestionSource.dummyQuestion
-
+    val categories = listOf("Hardware", "Software", "Cyber", "AI", "Internet")
     var score by remember {mutableIntStateOf(0)}
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .statusBarsPadding(),
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
@@ -67,7 +69,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                     color = Color(0xFF001F3F),
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.padding(vertical = 8.dp)
-                ){
+                ) {
                     Text(
                         text = "Skor Kamu: $score",
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
@@ -76,14 +78,40 @@ fun Greeting(modifier: Modifier = Modifier) {
                         fontWeight = FontWeight.Bold
                     )
                 }
-                Text(
-                    text = "Quiz Teknologi & Keamanan",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color(0xFF001F3F),
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp
-                )
             }
+        }
+        item {
+            Text(
+                text = "Kategori Kuis",
+                style = MaterialTheme.typography.titleLarge,
+                color = Color(0xFF001F3F),
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.5.sp
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(categories) { category ->
+                    Card(
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFBBDEFB))
+                    ) {
+                        Text(
+                            text = category,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "Daftar Pertanyaan",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         items(allQuestions) { item ->
@@ -103,7 +131,7 @@ fun QuestionCard(question: Question, onScoreIncrease: () -> Unit) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFBBDEFB)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
