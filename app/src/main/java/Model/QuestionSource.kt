@@ -2,46 +2,59 @@ package Model
 
 object QuestionSource {
     val dummyQuestion = listOf(
-        Question(
-            "Menggunakan HTTPS berarti website tersebut pasti terpercaya.",
-            false,
-            "HTTPS hanya mengenkripsi komunikasi antara client dan server. Website tetap bisa berisi konten berbahaya."),
-        Question(
-            "Enkripsi simetris memanfaatkan satu kunci identik untuk enkripsi maupun dekripsi.",
-            true,
-            "Enkripsi simetris menggunakan satu kunci yang sama untuk mengamankan dan membuka data."),
-        Question(
-            "SQL Injection adalah serangan yang menargetkan kelemahan pada sisi client.",
-            false,
-            "SQL Injection menyerang sisi server dengan memanipulasi query database melalui input yang tidak divalidasi."),
-        Question(
-            "Virtual Machine memungkinkan satu sistem operasi berjalan di atas sistem operasi lain.",
-            true,
-            "Virtual Machine menggunakan hypervisor untuk menjalankan sistem operasi secara virtual di dalam sistem utama."),
-        Question(
-            "Menambah kapasitas RAM selalu meningkatkan performa CPU secara langsung.",
-            false,
-            "RAM membantu multitasking, tetapi tidak meningkatkan kecepatan pemrosesan CPU itu sendiri."),
-        Question(
-            "DNS berfungsi untuk menerjemahkan nama domain menjadi alamat IP.",
-            true,
-            "DNS (Domain Name System) mengubah domain seperti google.com menjadi alamat IP numerik."),
-        Question(
-            "Hashing dan enkripsi adalah proses yang dapat dibalik dengan kunci yang benar.",
-            false,
-            "Enkripsi bisa dibalik dengan kunci, tetapi hashing bersifat satu arah dan tidak dapat dikembalikan ke bentuk asli."),
-        Question(
-            "REST API biasanya menggunakan protokol HTTP untuk komunikasi data.",
-            true,
-            "REST API umumnya berjalan di atas HTTP dan menggunakan metode seperti GET, POST, PUT, dan DELETE."),
-        Question(
-            "Firewall hanya melindungi perangkat dari serangan virus.",
-            false,
-            "Firewall mengontrol lalu lintas jaringan masuk dan keluar, bukan khusus untuk virus saja."),
-        Question(
-            "Pada Object-Oriented Programming, inheritance memungkinkan sebuah class mewarisi atribut dan method dari class lain.",
-            true,
-            "Inheritance memungkinkan reuse kode dengan menurunkan properti dan fungsi dari parent class."
-        )
+        Question("Hardware", "CPU adalah komponen yang berfungsi sebagai otak komputer.", true, "CPU (Central Processing Unit) mengendalikan semua instruksi pada komputer."),
+        Question("Hardware", "RAM menyimpan data secara permanen meskipun komputer dimatikan.", false, "RAM bersifat volatile, artinya data akan hilang saat daya dimatikan."),
+        Question("Hardware", "SSD memiliki kecepatan baca dan tulis yang lebih cepat daripada HDD.", true, "SSD menggunakan memori flash yang jauh lebih cepat dibandingkan piringan cakram pada HDD."),
+        Question("Hardware", "GPU hanya digunakan untuk bermain game saja.", false, "GPU juga digunakan untuk rendering video, desain grafis, dan pemrosesan AI."),
+        Question("Hardware", "Motherboard adalah papan sirkuit utama tempat semua komponen terhubung.", true, "Semua komponen seperti CPU, RAM, dan GPU terpasang di motherboard."),
+        Question("Hardware", "Power Supply berfungsi mengubah arus AC menjadi DC untuk komponen komputer.", true, "Komponen komputer membutuhkan arus DC searah yang stabil."),
+        Question("Hardware", "Monitor adalah salah satu perangkat input pada komputer.", false, "Monitor adalah perangkat output untuk menampilkan visual."),
+        Question("Hardware", "Overclocking bertujuan untuk meningkatkan kecepatan komponen melampaui standar pabrik.", true, "Overclocking meningkatkan clock rate untuk performa ekstra namun menghasilkan panas lebih."),
+        Question("Hardware", "Heatsink dan kipas berfungsi untuk mendinginkan suhu Processor.", true, "Pendinginan sangat penting agar processor tidak mengalami thermal throttling."),
+        Question("Hardware", "Keyboard mekanik menggunakan switch fisik di bawah setiap tombolnya.", true, "Berbeda dengan keyboard membran, keyboard mekanik memiliki switch individual."),
+
+        Question("Software", "Linux adalah contoh sistem operasi yang bersifat Open Source.", true, "Kode sumber Linux tersedia bebas untuk dipelajari dan dimodifikasi."),
+        Question("Software", "Compiler berfungsi menerjemahkan bahasa pemrograman menjadi kode mesin.", true, "Mesin hanya mengerti kode biner, sehingga compiler diperlukan."),
+        Question("Software", "Git adalah software yang digunakan untuk menonton film secara online.", false, "Git adalah Version Control System untuk mengelola perubahan kode program."),
+        Question("Software", "Android merupakan sistem operasi berbasis kernel Linux.", true, "Android dikembangkan oleh Google dengan dasar kernel Linux."),
+        Question("Software", "HTML adalah bahasa pemrograman yang digunakan untuk logika server.", false, "HTML adalah bahasa markup untuk struktur halaman web, bukan bahasa pemrograman logika."),
+        Question("Software", "API memungkinkan dua aplikasi untuk saling berkomunikasi satu sama lain.", true, "Application Programming Interface menjadi jembatan antar sistem."),
+        Question("Software", "IDE adalah lingkungan pengembangan yang mempermudah programmer menulis kode.", true, "Contoh IDE adalah Android Studio atau VS Code."),
+        Question("Software", "Firmware adalah software yang tertanam langsung pada hardware tertentu.", true, "Firmware mengontrol fungsi dasar perangkat keras seperti BIOS."),
+        Question("Software", "Bug adalah istilah untuk fitur yang bekerja dengan sangat baik.", false, "Bug adalah istilah untuk kesalahan atau kecacatan dalam kode program."),
+        Question("Software", "Database digunakan untuk menyimpan dan mengelola data secara terstruktur.", true, "Contoh database adalah MySQL, PostgreSQL, atau Firebase."),
+
+        Question("Cyber", "Phishing adalah upaya mencuri data sensitif melalui link atau email palsu.", true, "Pelaku menyamar sebagai institusi resmi untuk menipu korban."),
+        Question("Cyber", "Password '123456' adalah contoh password yang sangat kuat.", false, "Ini adalah password yang paling mudah ditebak dan tidak aman."),
+        Question("Cyber", "2FA (Two-Factor Authentication) menambah lapisan keamanan pada akun.", true, "2FA memerlukan verifikasi tambahan selain hanya password."),
+        Question("Cyber", "Firewall dapat memblokir akses tidak sah dari jaringan luar.", true, "Firewall menyaring lalu lintas data berdasarkan aturan keamanan."),
+        Question("Cyber", "Malware adalah singkatan dari Malicious Software (Perangkat Lunak Jahat).", true, "Termasuk virus, worm, trojan, dan ransomware."),
+        Question("Cyber", "VPN berfungsi untuk menyembunyikan alamat IP asli pengguna di internet.", true, "VPN mengenkripsi koneksi dan merutekannya melalui server lain."),
+        Question("Cyber", "Ransomware adalah jenis malware yang meminta tebusan dengan mengunci data korban.", true, "Data dienkripsi oleh pelaku dan kunci hanya diberikan jika tebusan dibayar."),
+        Question("Cyber", "Incognito mode otomatis membuat kamu tidak bisa dilacak oleh ISP.", false, "Incognito hanya tidak menyimpan riwayat di browser lokal, ISP tetap bisa melihat trafik."),
+        Question("Cyber", "SQL Injection menyerang database melalui input form yang tidak divalidasi.", true, "Pelaku memasukkan perintah SQL ke dalam input untuk memanipulasi database."),
+        Question("Cyber", "Social Engineering adalah teknik meretas psikologi manusia untuk mendapatkan informasi.", true, "Manipulasi ini lebih mengandalkan kesalahan manusia daripada celah teknis."),
+
+        Question("AI", "Machine Learning adalah cabang AI yang memungkinkan mesin belajar dari data.", true, "Mesin meningkatkan performanya seiring bertambahnya data yang dipelajari."),
+        Question("AI", "Turing Test digunakan untuk menguji apakah mesin memiliki kecerdasan setara manusia.", true, "Tes ini mengevaluasi apakah manusia bisa membedakan respon mesin dan manusia."),
+        Question("AI", "NLP (Natural Language Processing) berkaitan dengan interaksi antara komputer dan bahasa manusia.", true, "Contohnya adalah asisten virtual seperti Siri atau Google Assistant."),
+        Question("AI", "AI hanya bisa digunakan pada perangkat robot berbentuk manusia.", false, "AI ada di mana-mana, mulai dari algoritma Netflix hingga deteksi spam email."),
+        Question("AI", "Deep Learning adalah bagian dari Machine Learning yang menggunakan saraf tiruan (Neural Networks).", true, "Deep learning terinspirasi dari cara kerja otak manusia."),
+        Question("AI", "Computer Vision memungkinkan komputer 'melihat' dan mengenali objek dalam gambar.", true, "Digunakan pada teknologi pengenalan wajah dan mobil otonom."),
+        Question("AI", "Chatbot adalah program komputer yang dirancang untuk menirukan percakapan manusia.", true, "Contoh chatbot populer saat ini adalah ChatGPT."),
+        Question("AI", "AI tidak membutuhkan data sama sekali untuk melakukan prediksi.", false, "Data adalah bahan bakar utama bagi model AI untuk belajar."),
+        Question("AI", "Singularity adalah titik di mana kecerdasan buatan melampaui kecerdasan manusia.", true, "Ini adalah konsep teoretis tentang masa depan teknologi AI."),
+        Question("AI", "Supervised Learning memerlukan data yang sudah memiliki label untuk proses pelatihan.", true, "Mesin belajar dari pasangan input dan output yang benar."),
+
+        Question("Internet", "World Wide Web (WWW) dan Internet adalah hal yang sama.", false, "Internet adalah infrastruktur jaringannya, sedangkan WWW adalah layanan yang berjalan di atasnya."),
+        Question("Internet", "Alamat IP (IP Address) berfungsi sebagai identitas unik perangkat di jaringan.", true, "Setiap perangkat butuh IP Address agar data bisa dikirim ke tujuan yang benar."),
+        Question("Internet", "Bandwidth adalah istilah untuk kecepatan maksimal transfer data dalam waktu tertentu.", true, "Bandwidth menentukan seberapa banyak data yang bisa lewat dalam satu jalur komunikasi."),
+        Question("Internet", "HTTP dan HTTPS memiliki tingkat keamanan yang sama.", false, "HTTPS menggunakan enkripsi (SSL/TLS) sehingga jauh lebih aman dibanding HTTP biasa."),
+        Question("Internet", "Cookie pada browser digunakan untuk menyimpan informasi sesi pengguna.", true, "Cookie membantu website mengingat preferensi atau status login kamu."),
+        Question("Internet", "Router adalah perangkat yang menghubungkan beberapa jaringan dan mengarahkan lalu lintas data.", true, "Router bertugas mencari jalur terbaik agar paket data sampai ke tujuan."),
+        Question("Internet", "Cloud Computing berarti menyimpan data hanya di dalam harddisk internal komputer.", false, "Cloud Computing adalah penyimpanan dan pemrosesan data di server internet pihak ketiga."),
+        Question("Internet", "IoT (Internet of Things) adalah konsep di mana benda sehari-hari terhubung ke internet.", true, "Contohnya lampu pintar, kulkas pintar, dan mesin cuci yang bisa dikontrol lewat HP."),
+        Question("Internet", "Domain .edu biasanya digunakan untuk institusi pendidikan.", true, "Setiap ekstensi domain memiliki tujuan tertentu, .edu khusus untuk edukasi."),
+        Question("Internet", "Kecepatan download dan upload pada koneksi internet selalu bernilai sama.", false, "Pada koneksi asimetris (seperti kebanyakan ISP rumah), kecepatan download biasanya lebih tinggi.")
     )
 }

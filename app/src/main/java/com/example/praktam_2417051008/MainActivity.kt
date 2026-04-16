@@ -9,13 +9,20 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import com.example.praktam_2417051008.ui.theme.PrakTAM_2417051008Theme
 
 class MainActivity : ComponentActivity() {
@@ -24,8 +31,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PrakTAM_2417051008Theme {
+                val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(modifier = Modifier.padding(innerPadding))
+                    AppNavigation(
+                        navController = navController,
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }
@@ -33,10 +44,28 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(modifier: Modifier = Modifier) {
-    val allQuestions = QuestionSource.dummyQuestion
+fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifier) {
+
+    var globalScore by remember { mutableIntStateOf(0) }
+    NavHost(
+        navController = navController,
+        startDestination = "home",
+        modifier = modifier
+    ) {
+        composable("home") {
+            HomeScreen(navController = navController, score = globalScore)
+        }
+
+        composable("detail/{namaKategori}") { backStackEntry ->
+            val namaKategori = backStackEntry.arguments?.getString("namaKategori") ?: "Kategori"
+            DetailKategoriScreen(namaKategori = namaKategori, navController = navController, onScoreAdd = { globalScore += 10 })
+        }
+    }
+}
+
+@Composable
+fun HomeScreen(navController: NavController, score: Int, modifier: Modifier = Modifier) {
     val categories = listOf("Hardware", "Software", "Cyber", "AI", "Internet")
-    var score by remember {mutableIntStateOf(0)}
 
     LazyColumn(
         modifier = modifier
@@ -73,7 +102,7 @@ fun Greeting(modifier: Modifier = Modifier) {
         }
         item {
             Text(
-                text = "Kategori Kuis",
+                text = "Pilih Kategori Kuis",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -84,31 +113,117 @@ fun Greeting(modifier: Modifier = Modifier) {
                 items(categories) { category ->
                     Card(
                         shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        modifier = Modifier.clickable {
+                            navController.navigate("detail/$category")
+                        }
                     ) {
                         Text(
                             text = category,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                            style = MaterialTheme.typography.labelLarge
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                         )
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Daftar Pertanyaan",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
         }
 
-        items(allQuestions) { item ->
-            QuestionCard(
-                question = item,
-                onScoreIncrease = {score += 10}
+        item {
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Silakan pilih salah satu kategori di atas untuk memulai kuis!",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline
             )
         }
+    }
+}
+
+@Composable
+fun DetailKategoriScreen(namaKategori: String, navController: NavController, onScoreAdd: () -> Unit) {
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val filteredQuestions = remember(namaKategori) {
+        QuestionSource.dummyQuestion.filter { it.kategori == namaKategori }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .statusBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Kuis: $namaKategori",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        isLoading = true
+                        delay(2000)
+                        isLoading = false
+                        snackbarHostState.showSnackbar("Proses kategori $namaKategori berhasil disimpan!")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Memproses...", style = MaterialTheme.typography.labelLarge)
+                } else {
+                    Text("Simpan Progres", style = MaterialTheme.typography.labelLarge)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(filteredQuestions) { question ->
+                    QuestionCard(
+                        question = question,
+                        onScoreIncrease = onScoreAdd
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                Text("Kembali", style = MaterialTheme.typography.labelLarge)
+            }
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -221,13 +336,5 @@ fun QuestionCard(question: Question, onScoreIncrease: () -> Unit) {
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PrakTAM_2417051008Theme {
-        Greeting()
     }
 }
