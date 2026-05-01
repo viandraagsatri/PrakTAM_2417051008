@@ -1,7 +1,6 @@
 package com.example.praktam_2417051008
 
-import Model.Question
-import Model.QuestionSource
+import com.example.praktam_2417051008.model.Question
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,13 +8,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -24,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.example.praktam_2417051008.ui.theme.PrakTAM_2417051008Theme
+import com.example.praktam_2417051008.network.RetrofitClient
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,24 +52,39 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifier) {
 
     var globalScore by remember { mutableIntStateOf(0) }
+    var allQuestions by remember { mutableStateOf<List<Question>>(emptyList()) }
+    var isFetchingData by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        try {
+            allQuestions = RetrofitClient.instance.getQuestions()
+            isFetchingData = false
+            isError = false
+        } catch (e: Exception) {
+            isFetchingData = false
+            isError = true
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = "home",
         modifier = modifier
     ) {
         composable("home") {
-            HomeScreen(navController = navController, score = globalScore)
+            HomeScreen(navController = navController, score = globalScore, isLoading = isFetchingData, isError = isError)
         }
 
         composable("detail/{namaKategori}") { backStackEntry ->
             val namaKategori = backStackEntry.arguments?.getString("namaKategori") ?: "Kategori"
-            DetailKategoriScreen(namaKategori = namaKategori, navController = navController, onScoreAdd = { globalScore += 10 })
+            DetailKategoriScreen(namaKategori = namaKategori, navController = navController, allQuestions = allQuestions, onScoreAdd = { globalScore += 10 })
         }
     }
 }
 
 @Composable
-fun HomeScreen(navController: NavController, score: Int, modifier: Modifier = Modifier) {
+fun HomeScreen(navController: NavController, score: Int, isLoading: Boolean, isError: Boolean, modifier: Modifier = Modifier) {
     val categories = listOf("Hardware", "Software", "Cyber", "AI", "Internet")
 
     LazyColumn(
@@ -107,48 +127,70 @@ fun HomeScreen(navController: NavController, score: Int, modifier: Modifier = Mo
                 color = MaterialTheme.colorScheme.primary,
             )
             Spacer(modifier = Modifier.height(12.dp))
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(categories) { category ->
-                    Card(
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                        modifier = Modifier.clickable {
-                            navController.navigate("detail/$category")
-                        }
-                    ) {
+
+            if (isLoading) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text("Menghubungkan ke Server...")
+                }
+            } else if (isError) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = category,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                            text = "Gagal Memuat Data",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Red
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Pastikan koneksi internet Anda menyala",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
+            } else {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(categories) { category ->
+                        Card(
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                            modifier = Modifier.clickable {
+                                navController.navigate("detail/$category")
+                            }
+                        ) {
+                            Text(
+                                text = category,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
             }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = "Silakan pilih salah satu kategori di atas untuk memulai kuis!",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
-            )
         }
     }
 }
 
 @Composable
-fun DetailKategoriScreen(namaKategori: String, navController: NavController, onScoreAdd: () -> Unit) {
+fun DetailKategoriScreen(namaKategori: String, navController: NavController, allQuestions: List<Question>, onScoreAdd: () -> Unit) {
     var isLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val filteredQuestions = remember(namaKategori) {
-        QuestionSource.dummyQuestion.filter { it.kategori == namaKategori }
+    val filteredQuestions = remember(namaKategori, allQuestions) {
+        allQuestions.filter { it.kategori == namaKategori }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -194,15 +236,22 @@ fun DetailKategoriScreen(namaKategori: String, navController: NavController, onS
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(filteredQuestions) { question ->
-                    QuestionCard(
-                        question = question,
-                        onScoreIncrease = onScoreAdd
-                    )
+            if (filteredQuestions.isEmpty()) {
+                Text(
+                    text = "Belum ada soal untuk kategori ini di Server.",
+                    color = MaterialTheme.colorScheme.outline
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(filteredQuestions) { question ->
+                        QuestionCard(
+                            question = question,
+                            onScoreIncrease = onScoreAdd
+                        )
+                    }
                 }
             }
 
@@ -239,6 +288,21 @@ fun QuestionCard(question: Question, onScoreIncrease: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            if (!question.imageUrl.isNullOrEmpty()) {
+                AsyncImage(
+                    model = question.imageUrl,
+                    contentDescription = "Gambar Soal",
+                    placeholder = painterResource(id = R.drawable.logo),
+                    error = painterResource(id = R.drawable.hoax),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
             Text(
                 text = "Pertanyaan:",
                 style = MaterialTheme.typography.labelMedium,
