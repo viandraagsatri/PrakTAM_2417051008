@@ -1,6 +1,6 @@
 package com.example.praktam_2417051008
 
-import com.example.praktam_2417051008.model.Question
+import com.example.praktam_2417051008.data.model.Question
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,7 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.example.praktam_2417051008.ui.theme.PrakTAM_2417051008Theme
-import com.example.praktam_2417051008.network.RetrofitClient
+import com.example.praktam_2417051008.data.repository.QuestionRepository
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,16 +53,18 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
 
     var globalScore by remember { mutableIntStateOf(0) }
     var allQuestions by remember { mutableStateOf<List<Question>>(emptyList()) }
-    var isFetchingData by remember { mutableStateOf(true) }
+    var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
+    val repository = remember { QuestionRepository() }
 
     LaunchedEffect(Unit) {
+        isLoading = true
         try {
-            allQuestions = RetrofitClient.instance.getQuestions()
-            isFetchingData = false
-            isError = false
+            allQuestions = repository.getQuestions()
+            isLoading = false
+            isError = allQuestions.isEmpty()
         } catch (e: Exception) {
-            isFetchingData = false
+            isLoading = false
             isError = true
         }
     }
@@ -73,7 +75,7 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
         modifier = modifier
     ) {
         composable("home") {
-            HomeScreen(navController = navController, score = globalScore, isLoading = isFetchingData, isError = isError)
+            HomeScreen(navController = navController, score = globalScore, isLoading = isLoading, isError = isError)
         }
 
         composable("detail/{namaKategori}") { backStackEntry ->
