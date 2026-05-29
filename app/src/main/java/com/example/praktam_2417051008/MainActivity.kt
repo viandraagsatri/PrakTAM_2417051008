@@ -20,6 +20,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -71,9 +72,17 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
 
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = "welcome",
         modifier = modifier
     ) {
+        composable("welcome") {
+            WelcomeScreen(onStartClick = {
+                navController.navigate("home") {
+                    popUpTo("welcome") { inclusive = true }
+                }
+            })
+        }
+
         composable("home") {
             HomeScreen(navController = navController, score = globalScore, isLoading = isLoading, isError = isError)
         }
@@ -86,8 +95,49 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
 }
 
 @Composable
+fun WelcomeScreen(onStartClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(24.dp)
+        ) {
+            Text(
+                text = "Kuis Fakta vs Hoax",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Uji pengetahuan teknologi kamu di sini!",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(48.dp))
+            Button(
+                onClick = onStartClick,
+                modifier = Modifier.fillMaxWidth().height(50.dp)
+            ) {
+                Text("Mulai Kuis")
+            }
+        }
+    }
+}
+
+@Composable
 fun HomeScreen(navController: NavController, score: Int, isLoading: Boolean, isError: Boolean, modifier: Modifier = Modifier) {
-    val categories = listOf("Hardware", "Software", "Cyber", "AI", "Internet")
+    val categories = listOf(
+        "Hardware" to "Komponen fisik komputer seperti CPU, RAM, dan kartu grafis.",
+        "Software" to "Program dan instruksi yang menjalankan perangkat keras.",
+        "Cyber" to "Keamanan jaringan, data, dan sistem dari ancaman digital.",
+        "AI" to "Kecerdasan buatan dan algoritma pembelajaran mesin.",
+        "Internet" to "Jaringan global yang menghubungkan perangkat di seluruh dunia."
+    )
 
     LazyColumn(
         modifier = modifier
@@ -122,21 +172,25 @@ fun HomeScreen(navController: NavController, score: Int, isLoading: Boolean, isE
                 }
             }
         }
+
         item {
             Text(
                 text = "Pilih Kategori Kuis",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary,
             )
-            Spacer(modifier = Modifier.height(12.dp))
+        }
 
-            if (isLoading) {
+        if (isLoading) {
+            item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.width(12.dp))
                     Text("Menghubungkan ke Server...")
                 }
-            } else if (isError) {
+            }
+        } else if (isError) {
+            item {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(32.dp),
                     contentAlignment = Alignment.Center
@@ -158,26 +212,63 @@ fun HomeScreen(navController: NavController, score: Int, isLoading: Boolean, isE
                         )
                     }
                 }
-            } else {
+            }
+        } else {
+            item {
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(categories) { category ->
+                    items(categories) { (title, _) ->
                         Card(
                             shape = RoundedCornerShape(8.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                             modifier = Modifier.clickable {
-                                navController.navigate("detail/$category")
+                                navController.navigate("detail/$title")
                             }
                         ) {
                             Text(
-                                text = category,
+                                text = title,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold
                             )
                         }
+                    }
+                }
+            }
+
+            item {
+                Text(
+                    text = "Silakan pilih salah satu kategori untuk memulai kuis!",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            items(categories) { (title, description) ->
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                        navController.navigate("detail/$title")
+                    }
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline
+                        )
                     }
                 }
             }
@@ -211,33 +302,6 @@ fun DetailKategoriScreen(namaKategori: String, navController: NavController, all
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    coroutineScope.launch {
-                        isLoading = true
-                        delay(2000)
-                        isLoading = false
-                        snackbarHostState.showSnackbar("Proses kategori $namaKategori berhasil disimpan!")
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Memproses...", style = MaterialTheme.typography.labelLarge)
-                } else {
-                    Text("Simpan Progres", style = MaterialTheme.typography.labelLarge)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             if (filteredQuestions.isEmpty()) {
                 Text(
                     text = "Belum ada soal untuk kategori ini di Server.",
@@ -255,19 +319,50 @@ fun DetailKategoriScreen(namaKategori: String, navController: NavController, all
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = { navController.popBackStack() },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            ) {
-                Text("Kembali", style = MaterialTheme.typography.labelLarge)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                isLoading = true
+                                delay(2000)
+                                isLoading = false
+                                snackbarHostState.showSnackbar("Proses kategori $namaKategori berhasil disimpan!")
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        enabled = !isLoading
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Memproses...", style = MaterialTheme.typography.labelLarge)
+                        } else {
+                            Text("Simpan Progres", style = MaterialTheme.typography.labelLarge)
+                        }
+                    }
+
+                    Button(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text("Kembali", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
             }
         }
 
